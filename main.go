@@ -20,6 +20,11 @@ func CreateTree(root *Node) {
 
 	// insert B, C, D into A & M into B
 	root.Node[1].Node = append(root.Node[1].Node, Node{Element: "M", Node: []Node{}})
+	root.Node[1].Node[0].Node = append(root.Node[1].Node[0].Node, Node{
+		Element: "N",
+		Node:    []Node{},
+	})
+
 	for _, e := range []string{"B", "C", "D"} {
 		root.Node[0].Node = append(root.Node[0].Node, Node{
 			Element: e,
@@ -60,12 +65,47 @@ func CreateTree(root *Node) {
 		Element: "T",
 		Node:    []Node{},
 	})
+	for _, e := range []string{"K", "M", "L"} {
+		root.Node[0].Node[2].Node = append(root.Node[0].Node[2].Node, Node{
+			Element: e,
+			Node:    []Node{},
+		})
+	}
+
+	for _, e := range []string{"U", "V"} {
+		root.Node[0].Node[2].Node[0].Node = append(root.Node[0].Node[2].Node[0].Node, Node{
+			Element: e,
+			Node:    []Node{},
+		})
+	}
+	for _, e := range []string{"X", "Y"} {
+		root.Node[0].Node[2].Node[1].Node = append(root.Node[0].Node[2].Node[1].Node, Node{
+			Element: e,
+			Node:    []Node{},
+		})
+	}
+	root.Node[0].Node[2].Node[1].Node[1].Node = append(root.Node[0].Node[2].Node[1].Node[0].Node, Node{
+		Element: "Z",
+		Node:    []Node{},
+	})
+	root.Node[0].Node[2].Node[2].Node = append(root.Node[0].Node[2].Node[2].Node, Node{
+		Element: "W",
+		Node:    []Node{},
+	})
+}
+
+func Display(n *Node) {
+	fmt.Println(n.Element)
+	if len(n.Node) > 0 {
+		for _, node := range n.Node {
+			Display(&node)
+		}
+	}
 }
 
 func main() {
 	root := new(Node)
 	CreateTree(root)
-
+	Display(root)
 	fmt.Println(root)
-	fmt.Println()
 }
