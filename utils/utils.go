@@ -1,5 +1,7 @@
 package utils
 
+import "fmt"
+
 var Exp = []string{
 	"ABFN",
 	"ABGO",
@@ -33,8 +35,7 @@ func Split(s string) []string {
 func search(r *Node, exp string) string {
 	match := ""
 	if len(exp) == 1 && r.Element == exp {
-		match = r.Element
-		return match
+		return r.Element
 	}
 	if r.Element == string(exp[0]) {
 		exp = exp[1:]
@@ -63,4 +64,20 @@ func Search(r *Node, exp string) string {
 		}
 	}
 	return matched
+}
+
+func insert(r *Node, e string) {
+	// root element case
+	if r.Element == "/" && len(r.Node) == 0 {
+		r.Node = append(r.Node, Node{Element: e, Node: []Node{}})
+		return
+	}
+}
+
+func Insert(r *Node, exp string) {
+	expArr := Split(exp)
+	for _, e := range expArr {
+		insert(r, e)
+	}
+	fmt.Println(r)
 }
