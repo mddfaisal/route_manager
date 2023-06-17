@@ -93,17 +93,10 @@ func CreateTree(root *utils.Node) {
 }
 
 func main() {
-	root := &utils.Node{Element: "/", Node: []utils.Node{}}
 	r1 := new(utils.Node)
 	CreateTree(r1)
-	fmt.Println("r1: ", r1)
-	for i := range utils.Exp {
-		fmt.Println("inserting exp: ", utils.Exp[i])
-		utils.Insert(root, utils.Exp[i])
-		// if i == 1 {
-		// 	break
-		// }
-	}
-	found := utils.Search(root, utils.Exp[2])
+	search := utils.Exp[4]
+	fmt.Println("searching: ", search)
+	found := utils.Search(r1, search)
 	fmt.Println("match: ", found)
 }
