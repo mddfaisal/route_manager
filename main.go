@@ -6,9 +6,6 @@ import (
 )
 
 func CreateTree(root *utils.Node) {
-	root.Element = "/"
-	root.Node = []utils.Node{}
-
 	for _, e := range []string{"A", "B"} {
 		root.Node = append(root.Node, utils.Node{
 			Element: e,
@@ -37,7 +34,7 @@ func CreateTree(root *utils.Node) {
 		})
 	}
 
-	for _, e := range []string{"O", "P", "Q", "R"} {
+	for _, e := range []string{"O", "P", "R", "Q"} {
 		root.Node[0].Node[0].Node[1].Node = append(root.Node[0].Node[0].Node[1].Node, utils.Node{
 			Element: e,
 			Node:    []utils.Node{},
@@ -63,7 +60,7 @@ func CreateTree(root *utils.Node) {
 		Element: "T",
 		Node:    []utils.Node{},
 	})
-	for _, e := range []string{"K", "M", "L"} {
+	for _, e := range []string{"K", "L", "M"} {
 		root.Node[0].Node[2].Node = append(root.Node[0].Node[2].Node, utils.Node{
 			Element: e,
 			Node:    []utils.Node{},
@@ -82,21 +79,27 @@ func CreateTree(root *utils.Node) {
 			Node:    []utils.Node{},
 		})
 	}
-	root.Node[0].Node[2].Node[1].Node[1].Node = append(root.Node[0].Node[2].Node[1].Node[0].Node, utils.Node{
-		Element: "Z",
-		Node:    []utils.Node{},
-	})
 	root.Node[0].Node[2].Node[2].Node = append(root.Node[0].Node[2].Node[2].Node, utils.Node{
 		Element: "W",
+		Node:    []utils.Node{},
+	})
+	root.Node[0].Node[2].Node[1].Node[1].Node = append(root.Node[0].Node[2].Node[1].Node[0].Node, utils.Node{
+		Element: "Z",
 		Node:    []utils.Node{},
 	})
 }
 
 func main() {
-	r1 := new(utils.Node)
-	CreateTree(r1)
-	search := utils.Exp[4]
-	fmt.Println("searching: ", search)
-	found := utils.Search(r1, search)
-	fmt.Println("match: ", found)
+	root := &utils.Node{Element: "/", Node: []utils.Node{}}
+	CreateTree(root)
+	fmt.Println(root)
+
+	r1 := &utils.Node{Element: "/", Node: []utils.Node{}}
+	for i := range utils.Exp {
+		utils.Insert(r1, utils.Exp[i])
+	}
+	fmt.Println(r1)
+	for i := range utils.Exp {
+		fmt.Println(utils.Exp[i], " ===> ", utils.Search(r1, utils.Exp[i]))
+	}
 }
