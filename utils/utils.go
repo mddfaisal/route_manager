@@ -16,6 +16,9 @@ var (
 		"ADMX",
 		"ADMYZ",
 		"BMN",
+		"CHSP",
+		"CHSQ",
+		"HMRP",
 	}
 	current, prev *Node
 )
@@ -67,7 +70,17 @@ func Search(r *Node, exp string) string {
 	return matched
 }
 
-func setNode(r *Node, node **Node, exp string, strict bool) {
+func setNode(r *Node, node **Node, exp string, strict bool, index int) {
+	if index == 0 {
+		for i := range r.Node {
+			if r.Node[i].Element == exp {
+				*node = &r.Node[i]
+				return
+			}
+		}
+		*node = r
+		return
+	}
 	if strict {
 		if r.Element == exp {
 			*node = r
@@ -80,7 +93,7 @@ func setNode(r *Node, node **Node, exp string, strict bool) {
 		}
 	}
 	for i := range r.Node {
-		setNode(&r.Node[i], node, exp, strict)
+		setNode(&r.Node[i], node, exp, strict, index)
 	}
 }
 
@@ -89,13 +102,13 @@ func Insert(r *Node, exp string) {
 	for i := range splt {
 		node := Node{Element: splt[i], Node: []Node{}}
 		current = nil
-		setNode(r, &current, splt[i], false)
+		setNode(r, &current, splt[i], false, i)
 		if current.Element == splt[i] {
 			continue
 		}
 		if i > 0 {
 			prev = nil
-			setNode(r, &prev, splt[i-1], true)
+			setNode(r, &prev, splt[i-1], true, i)
 			if prev.Element == splt[i-1] {
 				prev.Node = append(prev.Node, node)
 			}
