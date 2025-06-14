@@ -1,49 +1,76 @@
 package utils
 
+import (
+	"regexp"
+	"strings"
+)
+
 var (
 	Exp = []string{
-		"ABFN",
-		"ABGO",
-		"ABGP",
-		"ABGR",
-		"ABGQ",
-		"ACHS",
-		"ACIT",
-		"ACJ",
-		"ADKU",
-		"ADKV",
-		"ADLW",
-		"ADMX",
-		"ADMYZ",
-		"BMN",
-		"CHSP",
-		"CHSQ",
-		"HMRP",
+		"/A/B/F/N",
+		// "/A/:B/G/O",
+		// "/A/:B/G/P",
+		"/A/B/G/R",
+		"/A/B/G/Q",
+		"/A/C/H/S",
+		"/A/C/I/T",
+		"/A/C/J",
+		"/A/D/K/U",
+		"/A/D/K/V",
+		"/A/D/L/W",
+		"/A/D/M/X",
+		"/A/D/M/Y/Z",
+		"/B/M/N",
+		"/C/H/S/P",
+		"/C/H/S/Q",
+		"/C/H/M/R/P",
 	}
 	current, prev *Node
 )
 
 type Node struct {
-	Element string
-	Node    []Node
+	Element   string
+	IsDynamic bool
+	Node      []Node
 }
 
-func Split(s string) []string {
-	e := []string{}
-	for _, s := range s {
-		e = append(e, string(s))
+func SplitAndValidate(s string) []string {
+	result := strings.Split(s, "/")
+	if len(result[0]) != 0 {
+		panic("Invalid path: ")
 	}
-	return e
+	result = result[1:] //
+	if result[0] == ":" {
+		panic("Invalid path: " + s + " cannot start with a dynamic segment")
+	}
+	if len(result) == 1 && result[0] == "" {
+		panic("Invalid path: " + s + " cannot be empty")
+	}
+	if len(result) > 1 && result[0] == "" {
+		panic("Invalid path: " + s + " cannot have multiple segments without a leading slash")
+	}
+	for i := range result {
+		if len(result[i]) == 0 {
+			panic("Invalid path: " + s + " at index " + string(i))
+		}
+		if !regexp.MustCompile("^[:a-zA-Z0-9_-]*$").MatchString(result[i]) {
+			panic("Invalid path: " + s + " at index " + string(i))
+		}
+	}
+	return result
 }
 
-func search(r *Node, exp string) string {
+func search(r *Node, exp []string) string {
 	match := ""
-	if len(exp) == 1 && r.Element == exp {
+	if len(exp) == 1 && r.Element == exp[0] {
 		return r.Element
 	}
 	if r.Element == string(exp[0]) {
 		exp = exp[1:]
 		for _, n := range r.Node {
+			if n.IsDynamic && strings.HasPrefix(exp[0], ":") {
+				panic("Invalid path: " + strings.Join(exp, "/") + " cannot start with a dynamic segment")
+			}
 			if n.Element == string(exp[0]) {
 				return search(&n, exp)
 			}
@@ -52,15 +79,21 @@ func search(r *Node, exp string) string {
 	return match
 }
 
+// Search traverses the tree to find a node that matches the given expression.
+// It returns the element if found, otherwise an empty string.
 func Search(r *Node, exp string) string {
+	splt := SplitAndValidate(exp)
 	matched := ""
-	if len(exp) == 1 && r.Element == exp {
+	if len(splt) == 1 && r.Element == splt[0] {
 		return r.Element
 	}
 	if len(r.Node) > 0 {
 		for _, node := range r.Node {
-			if node.Element == string(exp[0]) {
-				matched = search(&node, exp)
+			if node.IsDynamic && strings.HasPrefix(splt[0], ":") {
+				panic("Invalid path: " + exp + " cannot start with a dynamic segment")
+			}
+			if node.Element == string(splt[0]) {
+				matched = search(&node, splt)
 				if len(matched) > 0 {
 					break
 				}
@@ -70,6 +103,10 @@ func Search(r *Node, exp string) string {
 	return matched
 }
 
+// setNode sets the current node based on the element and index.
+// If the index is 0, it sets the node to the first matching element.
+// If the index is greater than 0, it traverses the tree to find the node.
+// If strict is true, it only matches the exact element.
 func setNode(r *Node, node **Node, exp string, strict bool, index int) {
 	if index == 0 {
 		for i := range r.Node {
@@ -81,6 +118,8 @@ func setNode(r *Node, node **Node, exp string, strict bool, index int) {
 		*node = r
 		return
 	}
+	// If strict is true, we only match the exact element.
+	// If strict is false, we allow matching the first element or an empty node.
 	if strict {
 		if r.Element == exp {
 			*node = r
@@ -88,6 +127,9 @@ func setNode(r *Node, node **Node, exp string, strict bool, index int) {
 		}
 	} else {
 		if r.Element == exp || len(r.Node) == 0 {
+			if r.IsDynamic && strings.HasPrefix(exp, ":") {
+				panic("Invalid path: " + exp + " cannot start with a dynamic segment")
+			}
 			*node = r
 			return
 		}
@@ -97,10 +139,23 @@ func setNode(r *Node, node **Node, exp string, strict bool, index int) {
 	}
 }
 
+// Insert adds a new path to the tree structure.
+// It validates the path, splits it into segments, and inserts it into the tree.
+// It also validates dynamic segments and ensures the path structure is correct.
+// It panics if the path is invalid or if a dynamic segment is at the start of the path.
+// It uses a recursive approach to traverse the tree and insert the new node.
+// It also handles the case where the path is empty or has multiple segments without a leading slash.
+// It panics if the path is invalid or if a dynamic segment is at the start of the path.
+// It uses a recursive approach to traverse the tree and insert the new node.
+// It also handles the case where the path is empty or has multiple segments without a leading slash.
 func Insert(r *Node, exp string) {
-	splt := Split(exp)
+	splt := SplitAndValidate(exp)
 	for i := range splt {
-		node := Node{Element: splt[i], Node: []Node{}}
+		node := Node{
+			Element:   splt[i],
+			IsDynamic: strings.HasPrefix(splt[i], ":"),
+			Node:      []Node{},
+		}
 		current = nil
 		setNode(r, &current, splt[i], false, i)
 		if current.Element == splt[i] {
