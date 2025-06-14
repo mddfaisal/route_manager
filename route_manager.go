@@ -1,4 +1,10 @@
-package utils
+// @author Mohd Faisal
+// @license BSD-3-Clause
+// copyright 2025 Mohd Faisal
+// @version 1.0.0
+// @description This package provides a way to manage routes in a tree structure.
+
+package routemanager
 
 import (
 	"regexp"
