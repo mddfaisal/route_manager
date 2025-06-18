@@ -7,40 +7,21 @@
 package routemanager
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
 
-var (
-	Exp = []string{
-		"/A/B/F/N",
-		// "/A/:B/G/O",
-		// "/A/:B/G/P",
-		"/A/B/G/R",
-		"/A/B/G/Q",
-		"/A/C/H/S",
-		"/A/C/I/T",
-		"/A/C/J",
-		"/A/D/K/U",
-		"/A/D/K/V",
-		"/A/D/L/W",
-		"/A/D/M/X",
-		"/A/D/M/Y/Z",
-		"/B/M/N",
-		"/C/H/S/P",
-		"/C/H/S/Q",
-		"/C/H/M/R/P",
-	}
-	current, prev *Node
-)
+var current, prev *Node
 
 type Node struct {
+	Resource  interface{}
 	Element   string
 	IsDynamic bool
 	Node      []Node
 }
 
-func SplitAndValidate(s string) []string {
+func splitAndValidate(s string) []string {
 	result := strings.Split(s, "/")
 	if len(result[0]) != 0 {
 		panic("Invalid path: ")
@@ -57,10 +38,10 @@ func SplitAndValidate(s string) []string {
 	}
 	for i := range result {
 		if len(result[i]) == 0 {
-			panic("Invalid path: " + s + " at index " + string(i))
+			panic("Invalid path: " + s + " at index " + fmt.Sprintf("%v", i))
 		}
 		if !regexp.MustCompile("^[:a-zA-Z0-9_-]*$").MatchString(result[i]) {
-			panic("Invalid path: " + s + " at index " + string(i))
+			panic("Invalid path: " + s + " at index " + fmt.Sprintf("%v", i))
 		}
 	}
 	return result
@@ -88,7 +69,7 @@ func search(r *Node, exp []string) string {
 // Search traverses the tree to find a node that matches the given expression.
 // It returns the element if found, otherwise an empty string.
 func Search(r *Node, exp string) string {
-	splt := SplitAndValidate(exp)
+	splt := splitAndValidate(exp)
 	matched := ""
 	if len(splt) == 1 && r.Element == splt[0] {
 		return r.Element
@@ -155,7 +136,7 @@ func setNode(r *Node, node **Node, exp string, strict bool, index int) {
 // It uses a recursive approach to traverse the tree and insert the new node.
 // It also handles the case where the path is empty or has multiple segments without a leading slash.
 func Insert(r *Node, exp string) {
-	splt := SplitAndValidate(exp)
+	splt := splitAndValidate(exp)
 	for i := range splt {
 		node := Node{
 			Element:   splt[i],
