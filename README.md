@@ -23,8 +23,7 @@ go get github.com/mddfaisal/route_manager
 ```
 
 ## Sample code
-```
-```
+![Sample Code](https://github.com/mddfaisal/route_manager/tree/master/sample_code)
 
 ###
 
