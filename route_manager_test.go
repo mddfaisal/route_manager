@@ -34,10 +34,46 @@ func TestRouteManager_AllFinePaths(t *testing.T) {
 			for route, expected := range tt.routes {
 				r := &Node{}
 				Insert(r, route)
-				if got := Search(r, route); got != expected {
+				if got, _ := Search(r, route); got != expected {
 					t.Errorf("Search(%q) = %q; want %q", route, got, expected)
 				}
 			}
 		})
+	}
+}
+
+func TestRouteManager_InvalidPaths(t *testing.T) {
+	tests := []struct {
+		name   string
+		routes map[string]string
+	}{
+		{
+			name: "Test Invalid Paths",
+			routes: map[string]string{
+				"/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z": "Z",
+				"/A/B/C/D":    "D",
+				"/A/B/C/:D":   "panic",
+				"/A/B/C/:D/K": "panic",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for route := range tt.routes {
+				r := &Node{}
+				Insert(r, route)
+			}
+		})
+	}
+}
+
+// Test for dynamic segments
+func TestRouteManager_DynamicSegments(t *testing.T) {
+	r := &Node{}
+	if err := Insert(r, "/A/B/:C"); err != nil {
+		t.Errorf("Insert failed: %v", err)
+	}
+	if got, _ := Search(r, "/A/B/D"); got != "D" {
+		t.Errorf("Search(/A/B/D) = %q; want D", got)
 	}
 }
